@@ -6,7 +6,7 @@ Image viewer for png and jpeg format.
 
 
 # Usage
-1.Input your directory name.
-2.Push "Enter button".
-3.Imageviewer shows first image in your directory.
+1.Input your directory name.  
+2.Push "Enter button".  
+3.Imageviewer shows first image in your directory.  
 
