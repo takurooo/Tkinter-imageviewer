@@ -10,3 +10,10 @@ Image viewer for png and jpeg format.
 2.Push "Enter button".  
 3.Imageviewer shows first image in your directory.  
 
+
+#Requirement
+you should install Pillow library.
+
+'''
+pip install Pillow
+'''
