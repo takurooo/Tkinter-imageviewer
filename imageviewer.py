@@ -7,6 +7,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as tkmsg
+import tkinter.filedialog as tkfd
 
  #--------------------------------------------------------
  # defines
@@ -24,29 +25,25 @@ class ImageViewer():
         self.parent = master
         self.parent.title("ImageViewer")
         self.parent.resizable(width=tk.TRUE, height=tk.TRUE)
-        self.parent.bind("<Return>", self.enter)
         self.parent.bind("<Left>", self.prev)
         self.parent.bind("<Right>", self.next)
 
+        self.init_menubar()
+
         self.init_imageviewer()
+
+    def init_menubar(self):
+        menubar = tk.Menu(self.parent)
+        self.parent.configure(menu=menubar)
+        file_menu = tk.Menu(menubar, tearoff=False)
+        menubar.add_cascade(label="Dir", underline=0, menu=file_menu)
+        file_menu.add_command(label="Open", underline=0, command=self.open_dir)
+
 
     def init_imageviewer(self):
         # main frame
         self.mframe = tk.Frame(self.parent)
         self.mframe.pack(fill=tk.BOTH, expand=1)
-
-        # dir frame
-        self.dframe = tk.Frame(self.mframe)
-        self.dframe.pack(side=tk.TOP)
-        self.dir_label = tk.Label(self.dframe, text='dir name : ')
-        self.dir_label.pack(side=tk.LEFT)
-        self.dir_entry = tk.Entry(self.dframe, width=50)
-        self.dir_entry.insert(tk.END, "")
-        self.dir_entry.pack(side=tk.LEFT)
-        self.del_button = ttk.Button(self.dframe, text="x", width=1, command=self.delete)
-        self.del_button.pack(side=tk.LEFT)
-        self.enter_button = ttk.Button(self.dframe, text="Enter", width=6, command=self.enter)
-        self.enter_button.pack(side=tk.LEFT, padx=5)
 
         # image frame
         self.iframe = tk.Frame(self.mframe)
@@ -73,9 +70,32 @@ class ImageViewer():
         # delete str in entrybox.
         self.dir_entry.delete(0, tk.END)
 
-    def enter(self, event=None):
+    def prev(self, event=None):
+        if 0 < self.image_idx:
+            self.image_idx -= 1
+            self.show_image(self.image_idx)
 
-        self.image_dir = self.dir_entry.get()
+    def next(self, event=None):
+        if self.image_idx < (self.image_cnt-1):
+            self.image_idx += 1
+            self.show_image(self.image_idx)
+
+    def show_image(self, idx):
+        DISP_X = 0
+        DISP_Y = 0
+
+        if idx < 0 or idx >= self.image_cnt:
+            raise ValueError("imageidx invalid")
+
+        new_canvas_widht = max(self.image_maxreso["width"], self.CANVAS_WIDTH)
+        new_canvas_height = max(self.image_maxreso["height"], self.CANVAS_HEIGHT)
+        self.image_canvas.config(width=new_canvas_widht, height=new_canvas_height)
+
+        self.image_tk = ImageTk.PhotoImage(self.images[idx])
+        self.image_canvas.create_image(DISP_X, DISP_Y, image=self.image_tk, anchor=tk.NW)
+
+    def open_dir(self):
+        self.image_dir = tkfd.askdirectory()
 
         if self.image_dir == "":
             return
@@ -104,7 +124,6 @@ class ImageViewer():
                 self.image_maxreso["height"] = height
                 self.image_maxreso["width"] = width
 
-
         image_cnt = len(self.images)
         if image_cnt == 0:
             tkmsg.showwarning("Warning", message="image doesn't exist.")
@@ -114,30 +133,6 @@ class ImageViewer():
         self.image_cnt = image_cnt
 
         self.show_image(self.image_idx)
-
-    def prev(self, event=None):
-        if 0 < self.image_idx:
-            self.image_idx -= 1
-            self.show_image(self.image_idx)
-
-    def next(self, event=None):
-        if self.image_idx < (self.image_cnt-1):
-            self.image_idx += 1
-            self.show_image(self.image_idx)
-
-    def show_image(self, idx):
-        DISP_X = 0
-        DISP_Y = 0
-
-        if idx < 0 or idx >= self.image_cnt:
-            raise ValueError("imageidx invalid")
-
-        new_canvas_widht = max(self.image_maxreso["width"], self.CANVAS_WIDTH)
-        new_canvas_height = max(self.image_maxreso["height"], self.CANVAS_HEIGHT)
-        self.image_canvas.config(width=new_canvas_widht, height=new_canvas_height)
-
-        self.image_tk = ImageTk.PhotoImage(self.images[idx])
-        self.image_canvas.create_image(DISP_X, DISP_Y, image=self.image_tk, anchor=tk.NW)
 
 #--------------------------------------------------------
  # main
