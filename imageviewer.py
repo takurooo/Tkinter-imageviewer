@@ -41,6 +41,13 @@ class ImageViewer():
 
 
     def init_imageviewer(self):
+        self.images = list()
+        self.image_maxreso = dict()
+        self.image_tk = None
+        self.image_dir = None
+        self.image_idx = 0
+        self.image_cnt = 0
+
         # main frame
         self.mframe = tk.Frame(self.parent)
         self.mframe.pack(fill=tk.BOTH, expand=1)
@@ -59,12 +66,19 @@ class ImageViewer():
         self.next_button = ttk.Button(self.cframe, text='>>', width=10, command=self.next)
         self.next_button.pack(side = tk.LEFT, padx=5)
 
-        self.images = list()
-        self.image_maxreso = dict()
-        self.image_tk = None
-        self.image_dir = None
-        self.image_idx = 0
-        self.image_cnt = 0
+        # status frame
+        self.sframe = tk.Frame(self.mframe)
+        self.sframe.pack(side=tk.TOP, padx=5, pady=10)
+        self.status_label = ttk.Label(self.sframe,
+                                     text='{:3d}/{:3d}'.format(0,0),
+                                     width=10,
+                                     anchor=tk.CENTER)
+        self.status_label.pack(side = tk.LEFT, padx=5)
+        self.imagenum_entry = ttk.Entry(self.sframe, width=5)
+        self.imagenum_entry.insert(tk.END, "")
+        self.imagenum_entry.pack(side=tk.LEFT, padx=5)
+        self.skip_button = ttk.Button(self.sframe, text="SKIP", width=5, command=self.skip)
+        self.skip_button.pack(side = tk.LEFT, padx=5)
 
     def delete(self):
         # delete str in entrybox.
@@ -80,6 +94,14 @@ class ImageViewer():
             self.image_idx += 1
             self.show_image(self.image_idx)
 
+    def skip(self, event=None):
+        img_num = self.imagenum_entry.get()
+        if img_num.isdecimal():
+            img_idx = int(img_num) - 1
+            if 0 <= img_idx and img_idx <= (self.image_cnt-1):
+                self.image_idx = img_idx
+                self.show_image(self.image_idx)
+
     def show_image(self, idx):
         DISP_X = 0
         DISP_Y = 0
@@ -87,12 +109,17 @@ class ImageViewer():
         if idx < 0 or idx >= self.image_cnt:
             raise ValueError("imageidx invalid")
 
+        # update cnavas size
         new_canvas_widht = max(self.image_maxreso["width"], self.CANVAS_WIDTH)
         new_canvas_height = max(self.image_maxreso["height"], self.CANVAS_HEIGHT)
         self.image_canvas.config(width=new_canvas_widht, height=new_canvas_height)
 
+        # update cnavas image
         self.image_tk = ImageTk.PhotoImage(self.images[idx])
         self.image_canvas.create_image(DISP_X, DISP_Y, image=self.image_tk, anchor=tk.NW)
+
+        # update status label
+        self.status_label.configure(text='{:3d}/{:3d}'.format(self.image_idx+1,self.image_cnt))
 
     def open_dir(self):
         self.image_dir = tkfd.askdirectory()
